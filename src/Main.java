@@ -4,11 +4,13 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+
+
         // Initialisation de la bibliothèque
         System.out.println("=== Initialisation de la bibliothèque ===");
         Bibliotheque biblio = new Bibliotheque("Bibliothèque Nationale");
         System.out.println("Bibliothèque créée : " + biblio.getNom());
-
+        
         // Création des acteurs
         System.out.println("\n=== Création des acteurs ===");
         Auteur hugo = new Auteur("A001", "Hugo", "Victor");
@@ -36,6 +38,7 @@ public class Main {
         biblio.ajouterOuvrage(miserables);
         biblio.ajouterOuvrage(germinal);
         System.out.println("Nombre d'ouvrages en stock: " + biblio.getStock().size());
+        System.out.println("Ouvrages disponible"+biblio.getStock());
 
         // Création et test des lecteurs
         System.out.println("\n=== Test des emprunts ===");
@@ -87,11 +90,14 @@ public class Main {
         System.out.println("Événement créé: " + evenement1.getNom() + 
             " avec " + evenement1.getAuteursInvites().size() + " auteurs");
 
+        
+
         // Test de recherche
-//        System.out.println("\n=== Test de recherche ===");
-//        System.out.println("Recherche 'mis': " +
-//            biblio.rechercherOuvrages("mis").size() + " résultat(s)");
-//        System.out.println("Recherche 'zola': " +
-//            biblio.rechercherOuvrages("zola").size() + " résultat(s)");
+        System.out.println("\n=== Test de recherche ===");
+        System.out.println("Recherche par ISBN" +
+                ": " +
+            biblio.rechercherOuvrages("978-2-07-040089-6") );
+        System.out.println("Recherche 'Misérables': " +
+            biblio.rechercherOuvrages("Misérables"));
     }
 }

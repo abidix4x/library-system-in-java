@@ -105,18 +105,20 @@ public class Bibliotheque {
         return new ArrayList<>(evenements);
     }
 
-    // public List<Ouvrage> rechercherOuvrages(String critere) {
-    //     if (critere == null || critere.trim().isEmpty()) {
-    //         return new ArrayList<>();
-    //     }
-        
-    //     String critereLower = critere.toLowerCase().trim();
-    //     return stock.stream()
-    //             .filter(o -> o.getTitre().toLowerCase().contains(critereLower) ||
-    //                     o.getAuteur().getNom().toLowerCase().contains(critereLower) ||
-    //                     o.getAuteur().getPrenom().toLowerCase().contains(critereLower))
-    //             .collect(Collectors.toList());
-    // }
+    public Ouvrage rechercherOuvrages(String critere) {
+
+        String normalizedCritere = critere.trim().toLowerCase();
+
+        for (Ouvrage o : stock) {
+            if (o.getTitre().toLowerCase().contains(normalizedCritere) ||
+                    o.getIsbn().equalsIgnoreCase(normalizedCritere)) {
+                return o;
+            }
+        }
+
+        return null;
+    }
+
 
     public List<Emprunt> getEmpruntsPourLecteur(Lecteur lecteur) {
         return emprunts.stream()
