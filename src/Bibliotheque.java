@@ -3,32 +3,35 @@ import java.time.LocalDate;
 
 public class Bibliotheque {
     private String nom;
-    private List<Ouvrage> stock;
+    private Map<String, Ouvrage> stock; // Use Map to store Ouvrages by their ISBN
     private List<Emprunt> emprunts;
     private List<Commande> commandes;
     private List<Evenement> evenements;
 
     public Bibliotheque(String nom) {
         this.nom = nom;
-        this.stock = new ArrayList<>();
+        this.stock = new HashMap<>();
         this.emprunts = new ArrayList<>();
         this.commandes = new ArrayList<>();
         this.evenements = new ArrayList<>();
     }
 
     public void ajouterOuvrage(Ouvrage ouvrage) {
-        stock.add(ouvrage);
-    }
-    public void supprimerOuvrage(Ouvrage ouvrage) {
-        stock.remove(ouvrage);
+        stock.put(ouvrage.getIsbn(), ouvrage);
     }
 
-    public void emprunterOuvrage(Lecteur lecteur, Ouvrage ouvrage) throws EmpruntException {
-        if (!stock.contains(ouvrage)) {
+    public void supprimerOuvrage(Ouvrage ouvrage) {
+        stock.remove(ouvrage.getIsbn());
+    }
+
+    public Emprunt emprunterOuvrage(Lecteur lecteur, Ouvrage ouvrage) throws EmpruntException {
+        if (!stock.containsKey(ouvrage.getIsbn())) {
             throw new EmpruntException("L'ouvrage n'est pas disponible dans cette bibliothèque.");
         }
-        emprunts.add(new Emprunt(lecteur, ouvrage));
-        stock.remove(ouvrage);
+        Emprunt emprunt = new Emprunt(lecteur, ouvrage);
+        emprunts.add(emprunt);
+        stock.remove(ouvrage.getIsbn());
+        return emprunt;
     }
 
     public void retournerOuvrage(Emprunt emprunt) throws RetourException {
@@ -36,7 +39,7 @@ public class Bibliotheque {
             throw new RetourException("Cet emprunt n'est pas enregistré dans cette bibliothèque.");
         }
         emprunts.remove(emprunt);
-        stock.add(emprunt.getOuvrage());
+        stock.put(emprunt.getOuvrage().getIsbn(), emprunt.getOuvrage());
         if (emprunt.estEnRetard()) {
             appliquerPenalite(emprunt.getLecteur(), emprunt.calculerPenalite());
         }
@@ -57,6 +60,7 @@ public class Bibliotheque {
     public void organiserEvenement(Evenement evenement) {
         evenements.add(evenement);
     }
+
     public void annulerEvenement(Evenement evenement) {
         evenements.remove(evenement);
     }
@@ -68,12 +72,12 @@ public class Bibliotheque {
         if (montant <= 0) {
             throw new IllegalArgumentException("Le montant de la pénalité doit être positif");
         }
-        
+
         lecteur.ajouterPenalite(montant);
-        
+
         // Enregistrer la pénalité dans l'historique du lecteur
         lecteur.ajouterCommentaire("Pénalité de " + montant + "TND appliquée le " + LocalDate.now());
-        
+
         // Si le lecteur a trop de pénalités, bloquer temporairement son compte
         if (lecteur.getTotalPenalites() > 50) {
             lecteur.setBloquer(true);
@@ -90,7 +94,7 @@ public class Bibliotheque {
     }
 
     public List<Ouvrage> getStock() {
-        return new ArrayList<>(stock);
+        return new ArrayList<>(stock.values());
     }
 
     public List<Emprunt> getEmprunts() {
@@ -105,20 +109,31 @@ public class Bibliotheque {
         return new ArrayList<>(evenements);
     }
 
-    public Ouvrage rechercherOuvrages(String critere) {
-
+    public Ouvrage rechercherOuvrage(String critere) {
+        // Normalize the criteria
         String normalizedCritere = critere.trim().toLowerCase();
 
-        for (Ouvrage o : stock) {
-            if (o.getTitre().toLowerCase().contains(normalizedCritere) ||
-                    o.getIsbn().equalsIgnoreCase(normalizedCritere)) {
-                return o;
+        // Check if the criterion matches an ISBN
+        Ouvrage ouvrage = stock.get(normalizedCritere);
+        Ouvrage result=null;
+//        System.out.println("ouvrage de test: "+ouvrage);
+//        System.out.println(stock);
+        if (ouvrage != null) {
+            result=ouvrage;
+        }else{
+
+        // If not found by ISBN, search by title
+
+
+        for (Ouvrage o : stock.values()) {
+            if (o.getTitre().toLowerCase().equals(normalizedCritere)) {
+                result=o;
+                break;
             }
         }
-
-        return null;
+        }
+        return result;
     }
-
 
     public List<Emprunt> getEmpruntsPourLecteur(Lecteur lecteur) {
         return emprunts.stream()
